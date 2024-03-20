@@ -14,7 +14,7 @@ def get_form_view(request):
         # check whether it's valid:
         if form.is_valid():
             # process the data in form.cleaned_data as required
-            print(form.cleaned_data)
+            pass
     # if a GET (or any other method) we'll create a blank form
     else:
         form = VerificationRequestForm()

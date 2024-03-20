@@ -1,5 +1,68 @@
-<form id="verifyForm" action="." method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit">
-</form>
+{% extends 'base.html' %}
+{% load static %}
+{% block main %}
+    <form id="verifyForm" action="." method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
+    <div id="spinner" class="spinner-grow d-none" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <div id="info" class="d-none">
+        <table class="table">
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+{% endblock main %}
+{% block footer %}
+    <script src="{% static "js/jquery.js" %}"></script>
+    <script>
+    $(document).ready(function() {
+        $('#verifyForm').submit(function(event) {
+            event.preventDefault(); // Prevent default form submission
+            $('#info').empty();
+            // Show the spinner
+            $('#spinner').removeClass('d-none');
+            var formData = $(this).serialize(); // Serialize form data
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'user-data' %}",
+                timeout: 120000,
+                data: formData,
+                success: function(response) {
+                    // Handle success response
+                    $('#spinner').addClass('d-none');
+                    const userDetails = response?.request_response;
+                    function createTable(obj, parentKey = '') {
+                        const table = $('<table>').addClass('table table-bordered');
+                        $.each(obj, function(key, value) {
+                          const row = $('<tr>');
+                          row.append($('<th>').text(key));
+                          if (typeof value === 'object') {
+                            // Recursive call for nested objects
+                            row.append($('<td>').append(createTable(value, key)));
+                          } else {
+                            row.append($('<td>').text(value));
+                          }
+                          table.append(row);
+                        });
+                        return table;
+                      }
+                    // Append the table to the info
+                    $('#info').append(createTable(userDetails));
+                    $('#info').removeClass('d-none');
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(xhr.responseText);
+                    $('#spinner').addClass('d-none');
+                    $('#info').html('Error Occurred');
+                    $('#info').removeClass('d-none');
+                }
+            });
+        });
+    });
+    </script>
+{% endblock footer %}
