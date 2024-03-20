@@ -29,7 +29,6 @@ class VerificationRequestSerializer(serializers.Serializer):
     def to_representation(self, instance):
         # Get the default representation of the data
         data = super().to_representation(instance)
-        print(data)
         # Converting text back to JSON
         if data['request_response'] is not None:
             data['request_response'] = json.loads(data['request_response'])  # Converting text back to JSON
