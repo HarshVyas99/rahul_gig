@@ -5,7 +5,9 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_app.script import main
 import json
+import logging
 
+debug_logger = logging.getLogger('debug_logger')
 
 class VerificationRequestCreateView(CreateAPIView):
     serializer_class = VerificationRequestSerializer
@@ -33,6 +35,7 @@ class VerificationRequestCreateView(CreateAPIView):
                 headers = self.get_success_headers(serializer.data)
                 return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)   
         except Exception as e:
+            debug_logger.exception(f"Exception occured {e} during processing API request.")
             return Response({'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
             
             
