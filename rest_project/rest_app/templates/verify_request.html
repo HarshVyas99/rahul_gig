@@ -1,30 +1,58 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block style %}
+    <style>
+        body {
+            background-color: #343a40; /* Set background color for the page */
+        }
+    </style>
+{% endblock style %}
 {% block main %}
-    <form id="verifyForm" action="." method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Submit">
-    </form>
-    <div id="spinner" class="spinner-grow d-none" role="status">
-        <span class="visually-hidden">Loading...</span>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mt-5 bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Verify User Details</h5>
+                    <form id="verifyForm" action="." method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="text-center mt-3">
+                            <button type="submit" id="submitButton" class="btn btn-light">Submit</button>
+                            <div id="spinner" class="spinner-grow spinner-grow-sm ml-2 d-none" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mt-5 bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Profile Info</h5>
+                    <div id="info" class="d-none">
+                        <table class="table table-bordered">
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="info" class="d-none">
-        <table class="table">
-            <tbody>
-            </tbody>
-        </table>
-    </div>
+</div>
 {% endblock main %}
+
 {% block footer %}
-    <script src="{% static "js/jquery.js" %}"></script>
-    <script>
+<script src="{% static "js/jquery.js" %}"></script>
+<script>
     $(document).ready(function() {
         $('#verifyForm').submit(function(event) {
             event.preventDefault(); // Prevent default form submission
-            $('#info').empty();
-            // Show the spinner
-            $('#spinner').removeClass('d-none');
+            $('#info tbody').empty();
+            $('#submitButton').prop('disabled', true); // Disable submit button
+            $('#spinner').removeClass('d-none'); // Show spinner
             var formData = $(this).serialize(); // Serialize form data
             $.ajax({
                 type: 'POST',
@@ -33,36 +61,41 @@
                 data: formData,
                 success: function(response) {
                     // Handle success response
-                    $('#spinner').addClass('d-none');
+                    $('#spinner').addClass('d-none'); // Hide spinner
                     const userDetails = response?.request_response;
-                    function createTable(obj, parentKey = '') {
-                        const table = $('<table>').addClass('table table-bordered');
-                        $.each(obj, function(key, value) {
-                          const row = $('<tr>');
-                          row.append($('<th>').text(key));
-                          if (typeof value === 'object') {
-                            // Recursive call for nested objects
-                            row.append($('<td>').append(createTable(value, key)));
-                          } else {
-                            row.append($('<td>').text(value));
-                          }
-                          table.append(row);
-                        });
-                        return table;
-                      }
-                    // Append the table to the info
-                    $('#info').append(createTable(userDetails));
-                    $('#info').removeClass('d-none');
+                    // Construct profile info table based on received data
+                    function capitalizeFirstLetter(string) {
+                        if (typeof string !== 'string' || string.length === 0) {
+                            return string;
+                        }
+                        return string.charAt(0).toUpperCase() + string.slice(1);
+                    }
+                    $.each(userDetails, function(key, value) {
+                        if (typeof value === 'object') {
+                           // If value is an object, concatenate all details into a single string
+                           var detailsString = '';
+                           $.each(value, function(subKey, subValue) {
+                               detailsString += `${capitalizeFirstLetter(subKey)}: ${subValue}, `;
+                           });
+                           $('#info tbody').append(`<tr><th>${capitalizeFirstLetter(key)}</th><td>${detailsString}</td></tr>`);
+                        } else {
+                            $('#info tbody').append(`<tr><th>${capitalizeFirstLetter(key)}</th><td>${value}</td></tr>`);
+                        }
+                    });
+                    $('#info').removeClass('d-none'); // Show profile info
                 },
                 error: function(xhr, status, error) {
                     // Handle error
                     console.error(xhr.responseText);
-                    $('#spinner').addClass('d-none');
-                    $('#info').html('Error Occurred');
-                    $('#info').removeClass('d-none');
+                    $('#spinner').addClass('d-none'); // Hide spinner
+                    $('#info').html('Error Occurred').removeClass('d-none'); // Show error message
+                },
+                complete: function() {
+                    // Enable submit button after request is complete
+                    $('#submitButton').prop('disabled', false);
                 }
             });
         });
     });
-    </script>
+</script>
 {% endblock footer %}
