@@ -2,9 +2,9 @@ import hashlib
 import re
 import subprocess
 import time
-import tkinter as tk
+# import tkinter as tk
 from datetime import datetime, timedelta
-from tkinter import messagebox, simpledialog
+# from tkinter import messagebox, simpledialog
 from urllib.request import urlopen
 
 import requests
