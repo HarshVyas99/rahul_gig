@@ -11,6 +11,9 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
+import logging
+debug_logger = logging.getLogger('debug_logger')
+
 
 def check_spotify_match(email):
     spotify_url = f'https://spclient.wg.spotify.com/signup/public/v1/account?validate=1&email={email}'
@@ -371,6 +374,7 @@ def main(email_to_analyze, phone_to_validate,advanced_feature):
             }
     except Exception as e:
         # print(e)
+        debug_logger.exception(f"Exception occured {e} during processing API request.")
         return {
          'status':"Failed",
          'exception':str(e)   
