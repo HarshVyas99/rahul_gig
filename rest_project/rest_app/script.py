@@ -248,7 +248,24 @@ def get_domain_info(email):
         }
         return output
     except Exception as e:
-        return f"Error: {e}"
+        debug_logger.exception(f"Exception occured {e} during fetching domain info.")
+        return {
+            "email": email,
+            "deliverable": None,
+            "domain": None,
+            "tld": None,
+            "registered": None,
+            "created": None,
+            "updated": None,
+            "expires": None,
+            "registrar_name": None,
+            "registered_to": None,
+            "website_exists": None,
+            "ebay_match": None,
+            "spotify_match": None,
+            "gravatar_match": None,
+            "disney_plus_match": None
+        }
 
 
 def calculate_score(domain_info):
